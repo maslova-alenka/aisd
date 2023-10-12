@@ -56,9 +56,26 @@ std::ostream& operator<<(ostream& stream, const Point<T>& point) {
 	return stream;
 }
 
+template<typename T>
+bool operator==(const Point<T>& point1, const Point<T>& point2) {
+	const double = k_epsilon = 1.0E-5;
+	if ((std::abs(point1.x - point2.x) <= k_epsilon) && (std::abs(point1.y - point2.y) <= k_epsilon)) {
+		return true;
+	}
+	return false;
+}
 
+template<>
+bool operator==(const Point<T>& point1, const Point<T>& point2) {
+	if ((point1.x == point2.x) && (point1.y == point2.y)) {
+		return true;
+	}
+	return false;
+}
 
-
-
+template<typename T>
+bool operator!=(const Point<T>& point1, const Point<T>& point2) {
+	return(!(point1 == point2));
+}
 
 #endif
