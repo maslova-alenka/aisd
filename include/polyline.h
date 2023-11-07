@@ -1,12 +1,14 @@
-#ifndef TESTLABC_INCLUDE_POINT_H
-#define TESTLABC_INCLUDE_POINT_H
+#ifndef POLYLINE_INCLUDE_POLYLINE_H
+#define POLYLINE_INCLUDE_POLYLINE_H
 
 #include <utility>
 #include <stdexcept>
 
-#include "point.h"
 
-const int k_growth = 5;
+#include "point.h"
+#include "rand.h"
+
+const int growth = 5;
 
 template<typename T>
 class Polyline {
@@ -26,8 +28,8 @@ public:
 	Polyline<T>& operator+=(const Point<T>& p);
 	Polyline<T> operator+(const Point<T>& p);
 
-	const Point<T> operator[](int index) const;
-	Point<T> operator[](int index);
+	const Point<T>& operator[](int index) const;
+	Point<T>& operator[](int index);
 
 	Polyline<T>& operator+=(const Polyline<T>& other);
 	Polyline<T> operator+(const Polyline<T>& other);
@@ -50,7 +52,7 @@ Polyline<T>::Polyline(int capacity) : _capacity(capacity), _size(0) {
 
 template<typename T>
 Polyline<T>::Polyline(T x, T y) : _size(0) {
-	_capacity = k_grown;
+	_capacity = growth;
 	_data = new Point<T>*[_capacity]();
 	_data[0] = new Point<T>(x, y);
 	_size++;
@@ -58,18 +60,18 @@ Polyline<T>::Polyline(T x, T y) : _size(0) {
 
 template<typename T>
 Polyline<T>::Polyline(int size, T x0, T y0, T x1, T y1) : _size(size) {
-	_capacity = _size + k_growth;
+	_capacity = _size + growth;
 	_data = new Point<T>*[_capacity]();
 	for (int i = 0; i < _size; ++i) {
-		//to do
+		_data[i] = new Point<T>(Random(x0, x1), Random(y0, y1));
 	}
 }
 
 template<typename T>
 Polyline<T>::Polyline(const Polyline<T>& other) : Polyline(other._capacity) {
 	_size = other._size;
-	for (i = 0; i < _size; ++i) {
-		_data[i] = new Point(*other._data[i]);
+	for (int i = 0; i < _size; ++i) {
+		_data[i] = new Point<T>(*other._data[i]);
 	}
 }
 
@@ -92,25 +94,27 @@ Polyline<T>& Polyline<T>:: operator=(Polyline<T> other) {
 template<typename T>
 Polyline<T>& Polyline<T>::operator+=(const Point<T>& p) {
 	if (_size >= _capacity) {
-		_capacity += k_growth;
+		_capacity += growth;
 		Point<T>** tmp = new Point<T>*[_capacity]();
 
 		for (int i = 0; i < _size; ++i) {
-			_data = tmp;
+			tmp[i] = _data[i];
 		}
 
 		delete[] _data;
 		_data = tmp;
-
-		return *this;
 	}
+	_data[_size] = new Point<T>(p);
+	_size++;
+	
+	return *this;
 
 }
 
 template<typename T>
-Polyline<T>& Polyline<T>::operator+(const Point<T>& p) {
+Polyline<T> Polyline<T>::operator+(const Point<T>& p) {
 	Polyline<T> add_res(*this);
-	add_res += other;
+	add_res += p;
 	return add_res;
 
 }
@@ -133,8 +137,8 @@ Point<T>& Polyline<T>::operator[](int index) {
 
 template<typename T>
 Polyline<T>& Polyline<T> :: operator+=(const Polyline<T>& other) {
-	if (_size + other._size > _capactity) {
-		_capacity = _size + other._size + k_growth;
+	if (_size + other._size > _capacity) {
+		_capacity = _size + other._size + growth;
 		Point<T>** tmp = new Point<T>*[_capacity]();
 
 		for (int i = 0; i < _size; ++i) {
@@ -153,7 +157,7 @@ Polyline<T>& Polyline<T> :: operator+=(const Polyline<T>& other) {
 
 }
 
-temlate<typename T>
+template<typename T>
 Polyline<T> Polyline<T>:: operator+(const Polyline<T>& other) {
 	Polyline<T> add_res(*this);
 	add_res += other;
@@ -162,9 +166,9 @@ Polyline<T> Polyline<T>:: operator+(const Polyline<T>& other) {
 
 template<typename T>
 double Polyline<T>::length() {
-	doudle len = 0;
-	for (int i = 0; i < _size; ++i) {
-		len += (*_data[i]).distance(*data[i + 1]);
+	double len = 0;
+	for (int i = 0; i < _size-1; ++i) {
+		len += (*_data[i]).distance(*_data[i + 1]);
 	}
 	return len;
 
@@ -177,10 +181,12 @@ void Polyline<T>:: swap(Polyline<T>& other) noexcept {
 	std::swap(_capacity, other._capacity);
 }
 
+
+
 template<typename T>
 void Polyline<T>::push_back(const Point<T>& point) {
 	if (_size >= _capacity) {
-		_capacity += k_growth;
+		_capacity += growth;
 		Point<T>** tmp = new Point<T>*[_capacity]();
 
 		for (int i = 0; i < _size; ++i) {
@@ -198,7 +204,7 @@ void Polyline<T>::push_back(const Point<T>& point) {
 template<typename T>
 void Polyline<T>::push_front(const Point<T>& point) {
 	if (_size >= _capacity) {
-		_capacity + -k_growth;
+		_capacity += growth;
 		Point<T>** tmp = new Point<T>*[_capacity]();
 
 		for (int i = 0; i < _size; ++i) {
@@ -211,11 +217,12 @@ void Polyline<T>::push_front(const Point<T>& point) {
 
 	Point<T>** tmp = new Point<T>*[_capacity]();
 
+
 	for (int i = 0; i < _size; ++i) {
 		tmp[i + 1] = _data[i];
 	}
-
 	tmp[0] = new Point<T>(point);
+
 	delete[] _data;
 	_data = tmp;
 	++_size;
@@ -224,12 +231,12 @@ void Polyline<T>::push_front(const Point<T>& point) {
 template<typename T>
 Polyline<T>::~Polyline() {
 	if (_data != nullptr) {
-		for (i = 0; i < _size; ++i) {
-			detele _data[i];
+		for (int i = 0; i < _size; ++i) {
+			delete _data[i];
 		}
 		_size = 0;
 		_capacity = 0;
-		delete _data;
+		delete[] _data;
 		_data = nullptr;
 	}
 }
@@ -237,8 +244,8 @@ Polyline<T>::~Polyline() {
 template<typename T>
 std::ostream& operator<<(std::ostream& stream, const Polyline<T>& line) {
 	stream << "[ ";
-	for (i = 0, i < line._size(), ++i) {
-		if (i == (line._size() - 1)) {
+	for (int i = 0; i < line.size(); ++i) {
+		if (i == (line.size() - 1)) {
 			stream << line[i];
 		}
 		else {
@@ -246,7 +253,7 @@ std::ostream& operator<<(std::ostream& stream, const Polyline<T>& line) {
 		}
 	}
 	stream << " ]";
-		return stream;
+	return stream;
 }
 
 template <typename T>
@@ -257,7 +264,7 @@ bool operator==(const Polyline<T>& line1, const Polyline<T>& line2) {
 
 	bool be_eq = true;
 	for (int i = 0; i < line1.size(); ++i) {
-		if (line1[i] != line[i]) {
+		if (line1[i] != line2[i]) {
 			be_eq = false;
 		}
 	}
@@ -270,6 +277,11 @@ bool operator==(const Polyline<T>& line1, const Polyline<T>& line2) {
 	}
 
 	return (be_eq|| be_eq_reverse);
+}
+
+template<typename T>
+bool operator!=(const Polyline<T>& line1, const Polyline<T>& line2) {
+	return (!(line1 == line2));
 }
 
 #endif
